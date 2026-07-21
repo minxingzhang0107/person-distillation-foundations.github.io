@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Person Distillation: Foundations and Principles for Personalized AI</title>
+  <meta name="description" content="Person distillation transforms heterogeneous traces of a particular real person into evidence-grounded, person-specific, and revisable computational representations for specified uses.">
+  <link rel="canonical" href="https://person-distillation-foundations.github.io/">
+
+  <meta name="citation_title" content="Person Distillation: Foundations and Principles for Personalized AI">
+  <meta name="citation_author" content="Zhang, Minxing">
+  <meta name="citation_author" content="Yang, Yi">
+  <meta name="citation_author" content="Pei, Jian">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_pdf_url" content="https://person-distillation-foundations.github.io/Person_Distillation__Foundations_and_Principles_for_Personalized_AI.pdf">
+  <meta name="citation_abstract" content="Large language models are rapidly evolving from general-purpose assistants into personalized AI systems that collaborate with individuals over long periods of time. Emerging applications increasingly seek not only to answer questions, but also to reason, communicate, and act in ways that faithfully reflect a particular person. Recent systems have begun to distill personal knowledge, workplace experience, communication history, and behavioral traces into AI assistants, skill libraries, memory systems, and personalized agents. Despite this rapid progress, the field remains fragmented. Existing work differs substantially in the evidence it uses, the aspects of a person it preserves, the representations it constructs, the methods it employs, and the way it evaluates fidelity, leaving no common conceptual foundation for person distillation. This paper presents the first comprehensive framework for person distillation: the problem of transforming heterogeneous traces of a particular real person into faithful, evidence-grounded, and revisable computational representations. We organize the field as an end-to-end lifecycle consisting of four tightly coupled components: source evidence, distilled person representations, distillation methods, and evaluation. For each component, we develop a taxonomy that unifies existing research and identifies open design choices. We further organize the methodological landscape into six complementary families, ranging from prompt-based trace-to-profile distillation to memory-based, parametric and adapter-based, preference- and reward-based, behavioral and trajectory-based, and hybrid and revisable distillation. Finally, we propose a comprehensive evaluation framework covering person-fidelity objectives, benchmark construction protocols, quantitative metrics, and diagnostic analyses for measuring evidence grounding, person specificity, boundary awareness, and evaluation reliability. Beyond surveying existing work, this paper establishes a common vocabulary, a conceptual framework, and a research agenda for person distillation. By connecting advances in role-playing LLMs, personalized generation, agent memory, skill learning, and preference modeling, we identify the fundamental challenges that distinguish modeling a particular real person from modeling generic users, roles, or personas. As AI systems become increasingly personalized, collaborative, and long-lived, we believe person distillation will become a foundational capability for the next generation of AI assistants, digital coworkers, and human-centered intelligent systems.">
+
+  <meta property="og:title" content="Person Distillation: Foundations and Principles for Personalized AI">
+  <meta property="og:description" content="A comprehensive framework for transforming heterogeneous traces of a particular real person into evidence-grounded, person-specific, and revisable computational representations for specified uses.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://person-distillation-foundations.github.io/">
+  <meta property="og:image" content="https://person-distillation-foundations.github.io/assets/person_distillation_motivation.png">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Person Distillation: Foundations and Principles for Personalized AI">
+  <meta name="twitter:description" content="A framework for transforming heterogeneous traces of a particular real person into evidence-grounded, person-specific, and revisable computational representations for specified uses.">
+  <meta name="twitter:image" content="https://person-distillation-foundations.github.io/assets/person_distillation_motivation.png">
+
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2733;
+      --muted: #5e6b7a;
+      --line: #d9e0e8;
+      --surface: #f6f8fb;
+      --surface-strong: #eef3f7;
+      --accent: #0f766e;
+      --accent-strong: #115e59;
+      --code: #f0f4f8;
+      --max: 1120px;
+      --reading: 880px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.62;
+    }
+
+    a {
+      color: var(--accent-strong);
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.18em;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    .wrap {
+      width: min(100% - 32px, var(--max));
+      margin: 0 auto;
+    }
+
+    .hero-shell {
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .hero {
+      padding: 58px 0 42px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent-strong);
+      font-size: 0.9rem;
+      font-weight: 750;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--ink);
+    }
+
+    h1 {
+      max-width: 980px;
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 4.35rem);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: clamp(1.55rem, 3vw, 2rem);
+      line-height: 1.18;
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      margin: 30px 0 12px;
+      font-size: 1.18rem;
+      line-height: 1.25;
+    }
+
+    p {
+      margin: 0 0 15px;
+    }
+
+    .authors {
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .authors small {
+      font-size: 0.9rem;
+    }
+
+    .summary {
+      max-width: 920px;
+      margin: 24px 0 0;
+      font-size: 1.14rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 17px;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .button.secondary {
+      background: #ffffff;
+      color: var(--accent-strong);
+    }
+
+    .hero figure {
+      margin-top: 34px;
+    }
+
+    .section-nav {
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .section-nav .wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      padding: 14px 0;
+    }
+
+    .section-nav a {
+      color: var(--muted);
+      font-size: 0.94rem;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    main {
+      padding: 18px 0 70px;
+    }
+
+    section {
+      padding: 42px 0;
+      border-bottom: 1px solid var(--line);
+      scroll-margin-top: 20px;
+    }
+
+    section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-intro {
+      max-width: var(--reading);
+      font-size: 1.04rem;
+    }
+
+    .callout {
+      max-width: var(--reading);
+      margin: 20px 0;
+      padding: 16px 18px;
+      border-left: 4px solid var(--accent);
+      background: var(--surface);
+    }
+
+    .questions {
+      max-width: var(--reading);
+      margin: 18px 0 0;
+      padding-left: 22px;
+    }
+
+    .questions li {
+      margin: 7px 0;
+    }
+
+    figure {
+      margin: 26px 0 0;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #ffffff;
+    }
+
+    figcaption {
+      max-width: 930px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .item {
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .item strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .item span {
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 18px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: 0.97rem;
+    }
+
+    th,
+    td {
+      padding: 12px 13px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.81rem;
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .compact-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+      max-width: 980px;
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .compact-list li {
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 18px 0 0;
+      padding: 17px;
+      border-radius: 8px;
+      background: var(--code);
+      font-size: 0.9rem;
+      line-height: 1.48;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    footer {
+      padding: 30px 0 46px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    @media (max-width: 860px) {
+      .grid.three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hero {
+        padding-top: 38px;
+      }
+
+      .grid,
+      .grid.three,
+      .compact-list {
+        grid-template-columns: 1fr;
+      }
+
+      .section-nav .wrap {
+        gap: 8px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero-shell">
+    <div class="wrap hero">
+      <p class="eyebrow">Survey and Framework</p>
+
+      <h1>Person Distillation: Foundations and Principles for Personalized AI</h1>
+
+      <p class="authors">
+        Minxing Zhang<sup>*</sup>, Yi Yang<sup>*</sup>, and Jian Pei<br>
+        Duke University<br>
+        <small><sup>*</sup> Equal contribution.</small>
+      </p>
+
+      <p class="summary">
+        Person distillation is the process of transforming heterogeneous traces of a particular real person into evidence-grounded, person-specific, and revisable computational representations for specified uses.
+      </p>
+
+      <p class="summary">
+        These representations may preserve the person's domain knowledge and expertise, judgment and decision criteria, communication style, behavioral patterns, values and personality, and relational context.
+      </p>
+
+      <div class="actions" aria-label="Paper links">
+        <a class="button" href="Person_Distillation__Foundations_and_Principles_for_Personalized_AI.pdf">PDF</a>
+        <a class="button secondary" href="cite.bib">Cite</a>
+        <a class="button secondary" href="https://github.com/person-distillation-foundations/person-distillation-foundations.github.io">GitHub</a>
+      </div>
+
+      <figure>
+        <img
+          src="assets/person_distillation_motivation.png"
+          alt="Motivation for person distillation: heterogeneous personal traces are transformed into evidence-grounded and revisable representations for future collaborators and AI agents.">
+        <figcaption>
+          When a key person leaves an organization, person-specific domain knowledge and expertise, judgment and decision criteria, communication style, behavioral patterns, values and personality, and relational context remain distributed across heterogeneous traces. Person distillation transforms these traces into evidence-grounded and revisable representations, such as profiles, memory systems, adapters, reward models, or hybrid representations. These representations can support future collaborators or guide an AI agent in bounded, person-specific tasks.
+        </figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <nav class="section-nav" aria-label="Page sections">
+    <div class="wrap">
+      <a href="#overview">Overview</a>
+      <a href="#evidence">Source Evidence</a>
+      <a href="#representations">Representations</a>
+      <a href="#methods">Methods</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#future">Future Directions</a>
+      <a href="#cite">Citation</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="overview">
+      <h2>What Is Person Distillation?</h2>
+
+      <p class="section-intro">
+        Person distillation goes beyond conventional personalization. Personalization typically adapts an AI system to a user's information, preferences, or communication style. Person distillation instead begins with heterogeneous evidence about a particular real person and seeks to construct a faithful computational representation of that individual's domain knowledge and expertise, judgment and decision criteria, communication style, behavioral patterns, values and personality, and relational context.
+      </p>
+
+      <p class="section-intro">
+        Unlike conventional knowledge distillation, which transfers capability from a teacher model to a student model, person distillation begins with evidence about a real individual and seeks to preserve person-specific characteristics in computational representations.
+      </p>
+
+      <p class="section-intro">
+        Faithfully representing a person is also different from merely imitating one. A system may reproduce someone's writing style while failing to preserve their expertise, make technically correct decisions that differ from the person's judgment, or invent unsupported preferences, experiences, or decision rules.
+      </p>
+
+      <div class="callout">
+        <strong>Three fundamental questions</strong>
+        <ol class="questions">
+          <li>What information about the person is supported by the available evidence?</li>
+          <li>What makes that information specific to the individual rather than their general role?</li>
+          <li>When should the system acknowledge that the evidence is insufficient?</li>
+        </ol>
+      </div>
+
+      <figure>
+        <img
+          src="assets/general_taxonomy.png"
+          alt="General taxonomy of person distillation from source evidence to distilled person representations, distillation methods, and evaluation.">
+        <figcaption>
+          Person distillation is organized as a coupled lifecycle with four tightly connected components: source evidence, distilled person representations, distillation methods, and evaluation.
+        </figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Lifecycle component</th>
+              <th>Central question</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Source evidence</td>
+              <td>What personal traces are available, and what person-specific claims can they support?</td>
+            </tr>
+            <tr>
+              <td>Distilled person representations</td>
+              <td>What facets of the person should be preserved, and how should they be represented?</td>
+            </tr>
+            <tr>
+              <td>Distillation methods</td>
+              <td>How should heterogeneous traces be transformed into person-specific representations?</td>
+            </tr>
+            <tr>
+              <td>Evaluation</td>
+              <td>How can we determine whether the resulting representation faithfully captures the target person?</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        Beyond surveying existing work, the paper establishes a common vocabulary, a conceptual framework, and a research agenda by connecting role-playing LLMs, personalized generation, agent memory, skill learning, and preference modeling.
+      </div>
+    </section>
+
+    <section id="evidence">
+      <h2>Source Evidence: What Counts as a Personal Trace?</h2>
+
+      <p class="section-intro">
+        Person distillation begins with source evidence. Personal traces are observable evidence from which a person's knowledge, skills, preferences, personality, relationships, and behavioral patterns can be inferred. They include first-person artifacts such as messages, emails, code commits, authored documents, meeting recordings, social media posts, and activity logs, as well as third-party artifacts such as peer evaluations, performance reviews, media reports, and conversations about the target person.
+      </p>
+
+      <p class="section-intro">
+        The available evidence defines the boundary of what can be responsibly distilled. A system trained only on chat messages may imitate communication style but fail to recover technical judgment. A system trained only on task trajectories may capture reusable skills while missing the person-specific reasoning behind them.
+      </p>
+
+      <figure>
+        <img
+          src="assets/taxonomy_of_personal_traces.png"
+          alt="Taxonomy of personal traces organized by provenance, modality, abstraction level, and temporality.">
+        <figcaption>
+          Personal traces are organized along four complementary dimensions: provenance, modality, abstraction level, and temporality.
+        </figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Central question</th>
+              <th>Examples</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Provenance</td>
+              <td>Who generated the trace?</td>
+              <td>First-person traces; third-party traces.</td>
+            </tr>
+            <tr>
+              <td>Modality</td>
+              <td>How is the trace expressed and organized?</td>
+              <td>Text, speech, video, images, code, behavioral logs, task trajectories, and relational graphs.</td>
+            </tr>
+            <tr>
+              <td>Abstraction level</td>
+              <td>How much interpretation has already been applied?</td>
+              <td>Raw traces; interpreted or derived traces.</td>
+            </tr>
+            <tr>
+              <td>Temporality</td>
+              <td>When was the trace generated, and is its temporal structure preserved?</td>
+              <td>Snapshot traces; longitudinal or sequential traces.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="section-intro" style="margin-top: 18px;">
+        These dimensions are complementary rather than mutually exclusive. A trace may simultaneously be first-person, textual, raw, and timestamped, while another may be third-party, visual, highly interpreted, and retrospective. Existing research covers only part of this landscape: role-playing systems primarily model how a person appears, whereas agent skill distillation primarily models how a task is performed. Person distillation requires both the behavioral richness of real-world traces and the evidence-grounded specificity of a particular individual.
+      </p>
+    </section>
+
+    <section id="representations">
+      <h2>Distilled Person Representations</h2>
+
+      <p class="section-intro">
+        The output of person distillation is a distilled person representation. Designing this representation requires answering two orthogonal questions: <strong>what should be preserved</strong>, and <strong>how should it be encoded</strong>. The same person facet may be represented in several computational formats, while one representation format may preserve several facets.
+      </p>
+
+      <figure>
+        <img
+          src="assets/taxonomy_of_representation_design_space.png"
+          alt="Representation design space with content facets and representation formats.">
+        <figcaption>
+          The representation design space separates the content facet dimension, which specifies what aspects of a person should be preserved, from the representation format dimension, which specifies how those aspects should be computationally encoded.
+        </figcaption>
+      </figure>
+
+      <h3>Six Content Facets</h3>
+      <div class="grid three">
+        <div class="item">
+          <strong>Domain knowledge and expertise</strong>
+          <span>What they know: accumulated knowledge, conceptual frameworks, technical expertise, and professional experience.</span>
+        </div>
+        <div class="item">
+          <strong>Judgment and decision criteria</strong>
+          <span>How they evaluate: how the person compares alternatives, balances tradeoffs, and applies quality standards.</span>
+        </div>
+        <div class="item">
+          <strong>Communication style</strong>
+          <span>How they express: characteristic patterns of tone, wording, argumentation, level of detail, and adaptation to different audiences.</span>
+        </div>
+        <div class="item">
+          <strong>Behavioral patterns</strong>
+          <span>What they do: recurring actions and responses across situations rather than isolated behaviors.</span>
+        </div>
+        <div class="item">
+          <strong>Values and personality</strong>
+          <span>Who they are: relatively stable dispositions, values, interpersonal orientation, and risk tolerance.</span>
+        </div>
+        <div class="item">
+          <strong>Relational context</strong>
+          <span>How they interact with others: interaction patterns that vary across particular people, roles, teams, and social contexts.</span>
+        </div>
+      </div>
+
+      <h3>Four Representation Formats</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Representation format</th>
+              <th>Primary role</th>
+              <th>Strength and limitation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Document-based representations</td>
+              <td>Something that can be read</td>
+              <td>Profiles, skill files, system prompts, and behavioral specifications are transparent, editable, and auditable, but may fail to capture tacit or contextual knowledge.</td>
+            </tr>
+            <tr>
+              <td>Parametric model representations</td>
+              <td>Something that can imitate</td>
+              <td>Model parameters, adapters, embeddings, or other learned components can capture implicit regularities, but are difficult to inspect, revise, and verify.</td>
+            </tr>
+            <tr>
+              <td>Preference and reward model representations</td>
+              <td>Something that can evaluate</td>
+              <td>These models capture how a person compares or ranks alternatives, but evaluating candidates is not equivalent to generating what the person would have proposed.</td>
+            </tr>
+            <tr>
+              <td>Memory and knowledge system representations</td>
+              <td>Something that can remember</td>
+              <td>Queryable memories preserve experiences, timestamps, relationships, confidence, and supporting evidence, but require effective retrieval, abstraction, and reasoning.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure>
+        <img
+          src="assets/mapping_facets_to_hybrid_representations.png"
+          alt="Mapping person facets to document, parametric, preference and reward, and memory representations within a hybrid person representation.">
+        <figcaption>
+          Different person facets are supported by different representation formats, which can be composed into a hybrid person representation.
+        </figcaption>
+      </figure>
+
+      <p class="section-intro" style="margin-top: 18px;">
+        No single representation format is well suited to every facet. Explicit knowledge may be naturally represented in documents, recurring behavioral patterns may be learned parametrically, evaluative judgment may be captured through preference or reward models, and episodic experience may be preserved in memory systems. The central question is therefore not which single representation is best, but how multiple representations should work together.
+      </p>
+    </section>
+
+    <section id="methods">
+      <h2>How Are Person Representations Built?</h2>
+
+      <p class="section-intro">
+        Distillation methods transform heterogeneous personal traces into distilled person representations. A method must determine what person-specific information to extract, how to abstract it, and how to encode it in the target representation. The methodological landscape contains six complementary families, organized by their primary computational mechanism.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Method family</th>
+              <th>Primary mechanism</th>
+              <th>Central strength and limitation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Prompt-Based Trace-to-Profile Distillation</td>
+              <td>Uses an LLM to summarize personal traces into an explicit persona description, skill file, behavioral summary, or structured profile.</td>
+              <td>Simple, transparent, editable, and easy to integrate, but global compression may discard subtle behavioral patterns, implicit decision criteria, contextual information, and links to supporting evidence.</td>
+            </tr>
+            <tr>
+              <td>Memory-Based Distillation</td>
+              <td>Organizes episodes, facts, procedures, relationships, timestamps, and supporting evidence into queryable memory units.</td>
+              <td>Supports grounded and traceable reasoning, but requires decisions about what memories to construct, how to organize and retrieve them, and how to generalize from past experiences.</td>
+            </tr>
+            <tr>
+              <td>Parametric and Adapter-Based Distillation</td>
+              <td>Encodes person-specific patterns in model parameters, adapters, embeddings, or other learned components.</td>
+              <td>Captures recurring reasoning patterns and behavioral tendencies that are difficult to express explicitly, but is less interpretable and harder to inspect, revise, and verify.</td>
+            </tr>
+            <tr>
+              <td>Preference- and Reward-Based Distillation</td>
+              <td>Learns how the person compares or ranks alternative decisions.</td>
+              <td>Naturally represents judgment and decision criteria, but evaluating alternatives is not equivalent to generating them, and scalar scores may obscure the rationale behind a decision.</td>
+            </tr>
+            <tr>
+              <td>Behavioral and Trajectory-Based Distillation</td>
+              <td>Learns from sequences of actions, information gathering, decisions, plan revisions, and responses to feedback.</td>
+              <td>Captures procedural behavior over time, but real-world human trajectories are often fragmented, incomplete, and distributed across contexts and platforms.</td>
+            </tr>
+            <tr>
+              <td>Hybrid and Revisable Person Distillation</td>
+              <td>Coordinates multiple representation formats, integrates heterogeneous evidence, resolves inconsistencies, and updates representations as new evidence appears.</td>
+              <td>Can preserve complementary person facets, but requires mechanisms for maintaining coherence, provenance, and facet-specific revision across the combined system.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="section-intro" style="margin-top: 18px;">
+        These families are complementary rather than mutually exclusive. A practical system may use an explicit profile for inspectability, memories for grounded evidence, parametric components for implicit behavioral patterns, and preference or reward models for evaluative judgment. The central challenge is to coordinate them into a coherent and revisable system. Different facets may also need to evolve differently: rapidly changing information may remain in external memory, recurring behavioral tendencies may be updated through parametric learning, and decision criteria may be refined through continual preference learning.
+      </p>
+    </section>
+
+    <section id="evaluation">
+      <h2>How Should Person Distillation Be Evaluated?</h2>
+
+      <p class="section-intro">
+        Evaluation is the final component of person distillation. The objective is not merely to produce plausible, useful, or technically correct outputs, but to faithfully represent a particular individual. A system may write like a senior engineer, provide sound advice, or successfully complete a task while still failing at person distillation if its behavior is generic to the role rather than specific to the target person.
+      </p>
+
+      <div class="callout">
+        <strong>Central evaluation question:</strong><br>
+        The question is not simply “Is the output good?” but “Is this what this person would know, say, decide, or do in this situation?”
+      </div>
+
+      <p class="section-intro">
+        The evaluation framework contains four complementary components: evaluation objectives, benchmark construction protocols, evaluation metrics, and evaluation diagnostics. Because a person representation may preserve several different facets, person fidelity should be evaluated as a multidimensional profile rather than collapsed into a single score.
+      </p>
+
+      <h3>Six Person-Fidelity Objectives</h3>
+      <div class="grid three">
+        <div class="item"><strong>Knowledge fidelity</strong><span>Captures the person's knowledge, expertise, and experience while respecting the boundaries of that knowledge.</span></div>
+        <div class="item"><strong>Judgment fidelity</strong><span>Preserves characteristic criteria, priorities, tradeoffs, and decision-making patterns.</span></div>
+        <div class="item"><strong>Communication fidelity</strong><span>Matches characteristic tone, organization, level of detail, explanation strategy, and audience adaptation.</span></div>
+        <div class="item"><strong>Behavioral fidelity</strong><span>Reproduces recurring action patterns, evidence-seeking habits, planning strategies, and responses to uncertainty.</span></div>
+        <div class="item"><strong>Values and personality fidelity</strong><span>Reflects values, preferences, priorities, risk tolerance, interpersonal disposition, and personal boundaries.</span></div>
+        <div class="item"><strong>Relational fidelity</strong><span>Adapts appropriately across relationships, roles, teams, and organizational contexts.</span></div>
+      </div>
+
+      <h3>Five Benchmark Construction Protocols</h3>
+      <figure>
+        <img
+          src="assets/benchmarking_protocols_for_person_distillation.png"
+          alt="Benchmark construction protocols for person distillation: temporal hold-out, case hold-out, matched-peer comparison, self and peer review, and boundary probing.">
+        <figcaption>
+          Five complementary protocols evaluate temporal generalization, situational generalization, person specificity, perceived faithfulness, and awareness of evidential boundaries.
+        </figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Protocol</th>
+              <th>What it tests</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Temporal hold-out</td>
+              <td>Whether a representation distilled from earlier traces predicts the person's later behavior without using future information.</td>
+            </tr>
+            <tr>
+              <td>Case hold-out</td>
+              <td>Whether it generalizes to previously unseen situations while preserving person-specific reasoning.</td>
+            </tr>
+            <tr>
+              <td>Matched-peer comparison</td>
+              <td>Whether it distinguishes the target person from individuals with similar roles, expertise, or backgrounds.</td>
+            </tr>
+            <tr>
+              <td>Self and peer review</td>
+              <td>Whether the target person and knowledgeable collaborators recognize the representation as faithful.</td>
+            </tr>
+            <tr>
+              <td>Boundary probing</td>
+              <td>Whether the representation abstains, qualifies its answer, or acknowledges uncertainty when the available evidence does not support a person-specific claim.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="section-intro" style="margin-top: 18px;">
+        Boundary probing is especially important because ignorance is itself part of a faithful representation. The appropriate response is not always refusal: the system may generalize cautiously from related evidence while explicitly stating what remains unsupported. Evaluation should therefore distinguish supported answers, qualified answers, unsupported but plausible answers, and clear hallucinations.
+      </p>
+
+      <h3>Metrics</h3>
+      <ul class="compact-list">
+        <li><strong>Outcome metrics and decision alignment:</strong> whether the representation reaches the same observable outcomes or decisions as the target person. External task success should be reported as complementary rather than sufficient evidence of person fidelity.</li>
+        <li><strong>Judgment alignment:</strong> whether it identifies similar primary concerns, uses similar evidence, prioritizes considerations similarly, and reaches a similar final stance or action.</li>
+        <li><strong>Behavioral trajectory alignment:</strong> whether it follows similar information-gathering, planning, revision, and action patterns.</li>
+        <li><strong>Facet-level fidelity metrics:</strong> which of the six person facets are faithfully preserved and which remain weak or unsupported.</li>
+        <li><strong>Communication and relational similarity:</strong> whether its characteristic expression and interaction patterns match the person across audiences and relationships, including relative to matched peers.</li>
+      </ul>
+
+      <h3>Diagnostics</h3>
+      <ul class="compact-list">
+        <li><strong>Evidence-grounding diagnostics:</strong> whether person-specific claims remain traceable to supporting evidence, including evidence support and unsupported claim rates.</li>
+        <li><strong>Boundary diagnostics:</strong> whether the representation distinguishes supported conclusions from unsupported speculation and appropriately answers, qualifies, or abstains.</li>
+        <li><strong>Consistency diagnostics:</strong> whether different evidence sources and representation formats produce compatible conclusions, both globally and for individual person-fidelity facets.</li>
+        <li><strong>Evaluation-reliability diagnostics:</strong> whether human and model-based evaluations are reliable, including inter-annotator agreement, correlation with human or peer judgments, and separate reporting of self and peer ratings.</li>
+      </ul>
+
+      <p class="section-intro" style="margin-top: 18px;">
+        Metrics quantify how closely a representation matches the target person, whereas diagnostics explain whether that measured fidelity is grounded, well calibrated, internally consistent, and reliable. A complete evaluation should report both.
+      </p>
+    </section>
+
+    <section id="future">
+      <h2>Future Directions</h2>
+
+      <p class="section-intro">
+        As person representations become increasingly persistent, reusable, and capable, they will no longer function merely as machine learning artifacts. They may interact with people, organizations, and other AI systems over extended periods. The central questions therefore extend beyond how person representations should be constructed to how they should evolve, collaborate, be governed, and participate in future AI ecosystems.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Future direction</th>
+              <th>Central challenge</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lifelong and evolving person representations</td>
+              <td>Continually incorporate new evidence, revise outdated conclusions, distinguish enduring characteristics from temporary behavior, preserve historical versions, and represent uncertainty arising from incomplete or conflicting observations. Future systems should answer not only “Who was this person?” but also “Who is this person now?”</td>
+            </tr>
+            <tr>
+              <td>Richer computational representations of people</td>
+              <td>Preserve not only observable outputs and behaviors, but also the principles, reasoning processes, causal relationships, and decision mechanisms that generate them. These representations should remain interpretable, evidence-grounded, and revisable, and should explain why a person reached a conclusion rather than merely reproducing it.</td>
+            </tr>
+            <tr>
+              <td>Collective intelligence</td>
+              <td>Extend person distillation to teams, organizations, laboratories, and scientific communities while preserving complementary expertise, organizational memory, coordination procedures, authority structures, minority viewpoints, and legitimate disagreement rather than collapsing them into an artificial average expert.</td>
+            </tr>
+            <tr>
+              <td>Governance, consent, privacy, and verifiable unlearning</td>
+              <td>Consent should specify what information may be distilled, which person facets may be represented, how the representation may be used, how long it may persist, and what authority it may exercise. Systems should also support correction, provenance tracking, accountability, auditing, ownership, and verifiable removal of a person's influence from profiles, memories, learned parameters, reward models, and collective representations.</td>
+            </tr>
+            <tr>
+              <td>Trustworthy human-AI collaboration</td>
+              <td>The goal is not autonomous person representations but trustworthy collaboration between humans and their computational counterparts. High person fidelity should not automatically imply unrestricted authority. Future systems should communicate their scope and uncertainty and know when to answer, provide recommendations, seek additional expertise, defer to the real person if available, or abstain.</td>
+            </tr>
+            <tr>
+              <td>Causal and mechanistic fidelity</td>
+              <td>Move beyond reproducing historical behavior toward understanding why a person reaches particular conclusions, how competing objectives are balanced, what evidence changes their mind, and how they respond to controlled counterfactual situations. Evaluation should test whether a representation captures the mechanisms underlying human judgment rather than merely reproducing observable outcomes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="section-intro" style="margin-top: 18px;">
+        Person distillation is therefore a socio-technical research agenda rather than only a modeling problem. The long-term objective is to develop person representations that are faithful and useful while remaining transparent, controllable, accountable, revisable, and bounded by human authority.
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>Citation</h2>
+      <p class="section-intro">If you find this work useful, please cite:</p>
+      <pre><code>@misc{zhang2026persondistillation,
+  title  = {Person Distillation: Foundations and Principles for Personalized {AI}},
+  author = {Zhang, Minxing and Yang, Yi and Pei, Jian},
+  year   = {2026},
+  url    = {https://person-distillation-foundations.github.io/}
+}</code></pre>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p><strong>Person Distillation: Foundations and Principles for Personalized AI</strong></p>
+      <p>Minxing Zhang, Yi Yang, and Jian Pei · Duke University</p>
+    </div>
+  </footer>
+</body>
+</html>
